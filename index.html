@@ -3,310 +3,87 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Stock Setup Evaluator</title>
+  <title>TradeSetup AI - Pro Screener & Verifier</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #0d1117;
-      --card-bg: #161b22;
-      --border: #30363d;
-      --text: #c9d1d9;
-      --text-bright: #f0f6fc;
-      --accent: #58a6ff;
-      --green: #238636;
-      --green-light: #2ea043;
-      --red: #da3633;
-      --red-light: #f85149;
-      --yellow: #d29922;
+      --bg: #090d16;
+      --card-bg: rgba(22, 27, 34, 0.7);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --card-glow: rgba(56, 189, 248, 0.03);
+      --accent: #38bdf8;
+      --accent-hover: #0ea5e9;
+      --green: #10b981;
+      --green-bg: rgba(16, 185, 129, 0.12);
+      --red: #f43f5e;
+      --red-bg: rgba(244, 63, 94, 0.12);
+      --yellow: #f59e0b;
+      --yellow-bg: rgba(245, 158, 11, 0.12);
+      --text: #94a3b8;
+      --text-bright: #f8fafc;
+      --text-muted: #64748b;
     }
-    * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { background-color: var(--bg); color: var(--text); margin: 0; padding: 16px; }
-    .container { max-width: 960px; margin: auto; }
-    h1 { color: var(--text-bright); text-align: center; margin-bottom: 6px; font-size: 1.6rem; }
-    p.subtitle { text-align: center; color: #8b949e; margin-bottom: 20px; font-size: 0.9rem; }
-    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-    @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
-    .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
-    .card h2 { color: var(--text-bright); font-size: 1.1rem; margin-top: 0; margin-bottom: 14px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
-    .form-group { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 0.85rem; }
-    label { flex: 1; padding-right: 8px; }
-    input, select { background: #0d1117; border: 1px solid var(--border); color: var(--text-bright); padding: 6px 8px; border-radius: 6px; width: 140px; }
-    input:focus, select:focus { outline: 1px solid var(--accent); }
-    .buttons { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
-    button { cursor: pointer; border: 1px solid var(--border); padding: 8px 14px; border-radius: 6px; font-weight: 600; font-size: 0.85rem; }
-    .btn-primary { background: var(--accent); color: #0d1117; border-color: var(--accent); }
-    .btn-secondary { background: #21262d; color: var(--text-bright); }
-    .decision-banner { text-align: center; padding: 16px; border-radius: 8px; font-size: 1.4rem; font-weight: bold; margin-bottom: 16px; border: 1px solid transparent; }
-    .decision-buy { background: rgba(35, 134, 54, 0.2); border-color: var(--green); color: #3fb950; }
-    .decision-watch { background: rgba(210, 153, 34, 0.2); border-color: var(--yellow); color: #e3b341; }
-    .decision-avoid { background: rgba(218, 54, 51, 0.2); border-color: var(--red); color: var(--red-light); }
-    .gates-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 16px; }
-    @media (max-width: 500px) { .gates-grid { grid-template-columns: 1fr 1fr; } }
-    .gate-box { background: #0d1117; border: 1px solid var(--border); border-radius: 6px; padding: 10px; text-align: center; font-size: 0.75rem; }
-    .gate-status { font-weight: bold; margin-top: 4px; font-size: 0.85rem; }
-    .pass { color: #3fb950; }
-    .fail { color: var(--red-light); }
-    ul.reasons-list { margin: 0; padding-left: 20px; font-size: 0.85rem; line-height: 1.45; }
-    ul.reasons-list li { margin-bottom: 6px; }
-    .calc-row { display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 6px; padding-bottom: 6px; border-bottom: 1px dashed var(--border); }
-  </style>
-</head>
-<body>
 
-<div class="container">
-  <h1>Stock Setup Evaluator</h1>
-  <p class="subtitle">Multi-parameter technical evaluation & risk-to-reward scoring</p>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+    body { background-color: var(--bg); color: var(--text); padding: 24px 16px; min-height: 100vh; background-image: radial-gradient(circle at 50% 0%, rgba(56, 189, 248, 0.08) 0%, transparent 50%); }
+    .mono { font-family: 'JetBrains Mono', monospace; }
 
-  <div class="grid">
-    <!-- INPUT FORM -->
-    <div class="card">
-      <h2>Technical Parameters</h2>
-      
-      <div class="form-group">
-        <label>Market Regime</label>
-        <select id="marketRegime">
-          <option value="Bullish">Bullish</option>
-          <option value="Neutral">Neutral</option>
-          <option value="Bearish" selected>Bearish</option>
-        </select>
-      </div>
+    .app-container { max-width: 1140px; margin: 0 auto; }
 
-      <div class="form-group">
-        <label>EMA Structure</label>
-        <select id="emaStructure">
-          <option value="Bullish">Bullish</option>
-          <option value="Bearish" selected>Bearish</option>
-        </select>
-      </div>
+    /* Header */
+    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--card-border); flex-wrap: wrap; gap: 12px; }
+    .logo-area { display: flex; align-items: center; gap: 12px; }
+    .logo-badge { width: 38px; height: 38px; border-radius: 10px; background: linear-gradient(135deg, #38bdf8, #6366f1); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 800; font-size: 1.1rem; box-shadow: 0 4px 14px rgba(56, 189, 248, 0.4); }
+    .logo-title { font-size: 1.25rem; font-weight: 700; color: var(--text-bright); }
+    .logo-sub { font-size: 0.75rem; color: var(--text-muted); }
 
-      <div class="form-group">
-        <label>RSI (14)</label>
-        <input type="number" step="0.1" id="rsi" value="49.9" />
-      </div>
+    .preset-pills { display: flex; gap: 8px; flex-wrap: wrap; }
+    .btn-pill { background: rgba(255, 255, 255, 0.05); border: 1px solid var(--card-border); color: var(--text-bright); padding: 6px 14px; border-radius: 20px; font-size: 0.78rem; font-weight: 600; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px; }
+    .btn-pill:hover { background: rgba(255, 255, 255, 0.1); border-color: var(--accent); color: var(--accent); }
 
-      <div class="form-group">
-        <label>ADX (14)</label>
-        <input type="number" step="0.1" id="adx" value="13.1" />
-      </div>
+    /* Layout */
+    .dashboard-grid { display: grid; grid-template-columns: 420px 1fr; gap: 20px; }
+    @media (max-width: 960px) { .dashboard-grid { grid-template-columns: 1fr; } }
 
-      <div class="form-group">
-        <label>MACD Line</label>
-        <input type="number" step="0.01" id="macd" value="-34.05" />
-      </div>
+    /* Card Panels */
+    .panel { background: var(--card-bg); backdrop-filter: blur(12px); border: 1px solid var(--card-border); border-radius: 16px; padding: 20px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); }
+    .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .panel-title { font-size: 0.95rem; font-weight: 700; color: var(--text-bright); text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 8px; }
+    .panel-title::before { content: ""; width: 3px; height: 14px; background: var(--accent); border-radius: 2px; }
 
-      <div class="form-group">
-        <label>Relative Volume (RVOL)</label>
-        <input type="number" step="0.05" id="rvol" value="0.00" />
-      </div>
+    /* Inputs */
+    .input-section-title { font-size: 0.72rem; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.08em; margin: 14px 0 8px 0; }
+    .form-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.03); }
+    .form-row label { font-size: 0.82rem; color: var(--text); }
+    .form-row input, .form-row select { background: #0d121d; border: 1px solid var(--card-border); color: var(--text-bright); padding: 7px 10px; border-radius: 8px; width: 130px; font-size: 0.85rem; font-weight: 500; text-align: right; transition: all 0.2s; }
+    .form-row select { text-align: left; }
+    .form-row input:focus, .form-row select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2); }
 
-      <div class="form-group">
-        <label>Current Price (₹)</label>
-        <input type="number" step="0.05" id="currentPrice" value="2298.00" />
-      </div>
+    .btn-calc { width: 100%; margin-top: 18px; padding: 12px; background: linear-gradient(135deg, #38bdf8, #2563eb); border: none; border-radius: 10px; color: #fff; font-size: 0.9rem; font-weight: 700; cursor: pointer; transition: transform 0.1s, box-shadow 0.2s; box-shadow: 0 4px 16px rgba(56, 189, 248, 0.3); }
+    .btn-calc:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(56, 189, 248, 0.4); }
 
-      <div class="form-group">
-        <label>Stop Reference (₹)</label>
-        <input type="number" step="0.05" id="stopRef" value="2144.80" />
-      </div>
+    /* Top Result Verdict Hero */
+    .hero-verdict { border-radius: 14px; padding: 20px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; border: 1px solid transparent; transition: all 0.3s ease; }
+    .verdict-info h2 { font-size: 1.45rem; font-weight: 800; line-height: 1.2; }
+    .verdict-info p { font-size: 0.82rem; margin-top: 4px; opacity: 0.9; }
 
-      <div class="form-group">
-        <label>Target 1 (₹)</label>
-        <input type="number" step="0.05" id="target1" value="2403.26" />
-      </div>
+    .verdict-buy { background: var(--green-bg); border-color: rgba(16, 185, 129, 0.3); color: var(--green); }
+    .verdict-watch { background: var(--yellow-bg); border-color: rgba(245, 158, 11, 0.3); color: var(--yellow); }
+    .verdict-avoid { background: var(--red-bg); border-color: rgba(244, 63, 94, 0.3); color: var(--red); }
 
-      <div class="form-group">
-        <label>False Breakout Detected?</label>
-        <select id="falseBreakout">
-          <option value="No" selected>No / False</option>
-          <option value="Yes">Yes / True</option>
-        </select>
-      </div>
+    /* Score Dial */
+    .dial-wrapper { position: relative; width: 68px; height: 68px; display: flex; align-items: center; justify-content: center; }
+    .dial-svg { transform: rotate(-90deg); width: 68px; height: 68px; }
+    .dial-svg circle { fill: none; stroke-width: 6; stroke-linecap: round; }
+    .dial-bg { stroke: rgba(255, 255, 255, 0.08); }
+    .dial-fill { stroke: currentColor; stroke-dasharray: 188; stroke-dashoffset: 60; transition: stroke-dashoffset 0.8s ease; }
+    .dial-text { position: absolute; font-size: 0.95rem; font-weight: 800; }
 
-      <div class="buttons">
-        <button class="btn-primary" onclick="evaluateSetup()">Evaluate Setup</button>
-        <button class="btn-secondary" onclick="loadScreenshotData()">Screenshot Data</button>
-        <button class="btn-secondary" onclick="loadBullishPreset()">Bullish Preset</button>
-      </div>
-    </div>
-
-    <!-- RESULTS PANEL -->
-    <div>
-      <div id="decisionBanner" class="decision-banner decision-avoid">DO NOT BUY / AVOID</div>
-
-      <div class="gates-grid">
-        <div class="gate-box">
-          <div>1. Macro/Regime</div>
-          <div id="gate1" class="gate-status fail">FAIL</div>
-        </div>
-        <div class="gate-box">
-          <div>2. Trend Structure</div>
-          <div id="gate2" class="gate-status fail">FAIL</div>
-        </div>
-        <div class="gate-box">
-          <div>3. Volume / Fuel</div>
-          <div id="gate3" class="gate-status fail">FAIL</div>
-        </div>
-        <div class="gate-box">
-          <div>4. Risk / Reward</div>
-          <div id="gate4" class="gate-status fail">FAIL</div>
-        </div>
-      </div>
-
-      <div class="card" style="margin-bottom: 16px;">
-        <h2>Math & Trade Execution Metrics</h2>
-        <div class="calc-row">
-          <span>Downside Risk (Per Share):</span>
-          <strong id="riskAmount">₹153.20</strong>
-        </div>
-        <div class="calc-row">
-          <span>Upside Reward to Target 1:</span>
-          <strong id="rewardAmount">₹105.26</strong>
-        </div>
-        <div class="calc-row">
-          <span>Calculated Risk-to-Reward Ratio:</span>
-          <strong id="rrRatio">0.69 (Unfavorable)</strong>
-        </div>
-      </div>
-
-      <div class="card">
-        <h2>Detailed Specific Reasons</h2>
-        <ul id="reasonsList" class="reasons-list"></ul>
-      </div>
-    </div>
-  </div>
-</div>
-
-<script>
-function evaluateSetup() {
-  const regime = document.getElementById('marketRegime').value;
-  const ema = document.getElementById('emaStructure').value;
-  const rsi = parseFloat(document.getElementById('rsi').value) || 0;
-  const adx = parseFloat(document.getElementById('adx').value) || 0;
-  const macd = parseFloat(document.getElementById('macd').value) || 0;
-  const rvol = parseFloat(document.getElementById('rvol').value) || 0;
-  const price = parseFloat(document.getElementById('currentPrice').value) || 0;
-  const stop = parseFloat(document.getElementById('stopRef').value) || 0;
-  const target = parseFloat(document.getElementById('target1').value) || 0;
-  const falseBO = document.getElementById('falseBreakout').value;
-
-  const risk = Math.max(0, price - stop);
-  const reward = Math.max(0, target - price);
-  const rr = risk > 0 ? (reward / risk) : 0;
-
-  document.getElementById('riskAmount').textContent = '₹' + risk.toFixed(2);
-  document.getElementById('rewardAmount').textContent = '₹' + reward.toFixed(2);
-  document.getElementById('rrRatio').textContent = rr.toFixed(2) + (rr >= 2.0 ? ' (Optimal)' : ' (Unfavorable)');
-
-  let reasons = [];
-  let g1 = false, g2 = false, g3 = false, g4 = false;
-
-  // Gate 1: Macro / Regime
-  if (regime === 'Bullish') {
-    g1 = true;
-  } else {
-    reasons.push("Market regime is " + regime + " — broad market conditions create persistent drag.");
-  }
-
-  // Gate 2: Structure & Momentum
-  if (ema === 'Bullish' && macd > 0) {
-    g2 = true;
-  } else {
-    if (ema !== 'Bullish') reasons.push("EMA structure is Bearish — short-term moving averages sit below longer averages.");
-    if (macd <= 0) reasons.push("MACD is negative (" + macd + ") — medium-term momentum remains with sellers.");
-  }
-
-  // RSI & Trend Strength Check
-  if (rsi > 70) reasons.push("RSI is overbought (" + rsi + ") — elevated vulnerability to pullbacks.");
-  if (adx < 20) reasons.push("ADX is low (" + adx + ") — indicates a chop/range rather than a strong directional trend.");
-
-  // Gate 3: Volume Confirmation
-  if (rvol >= 1.5) {
-    g3 = true;
-  } else {
-    reasons.push("RVOL is low (" + rvol + "x) — lack of institutional buying volume to sustain upside.");
-  }
-
-  // False breakout filter
-  if (falseBO === 'Yes') {
-    reasons.push("False breakout flag is active — high likelihood of a bull trap.");
-  }
-
-  // Gate 4: Risk / Reward
-  if (rr >= 1.8) {
-    g4 = true;
-  } else {
-    reasons.push("Risk/Reward is " + rr.toFixed(2) + " — below the standard 1:2 minimum threshold.");
-  }
-
-  // Update Gates
-  setGate('gate1', g1);
-  setGate('gate2', g2);
-  setGate('gate3', g3);
-  setGate('gate4', g4);
-
-  // Verdict Logic
-  const banner = document.getElementById('decisionBanner');
-  banner.className = 'decision-banner';
-  
-  if (g1 && g2 && g3 && g4 && falseBO === 'No') {
-    banner.textContent = 'BUY / CONFIRMED SETUP';
-    banner.classList.add('decision-buy');
-    if (reasons.length === 0) {
-      reasons.push("All 4 gates passed: Bullish regime, positive momentum, strong volume, and favorable R:R.");
-    }
-  } else if ((g1 || g2) && !g3 && rr >= 1.5 && falseBO === 'No') {
-    banner.textContent = 'WATCHLIST / WAIT FOR VOLUME';
-    banner.classList.add('decision-watch');
-  } else {
-    banner.textContent = 'DO NOT BUY / AVOID';
-    banner.classList.add('decision-avoid');
-  }
-
-  const list = document.getElementById('reasonsList');
-  list.innerHTML = '';
-  reasons.forEach(r => {
-    const li = document.createElement('li');
-    li.textContent = r;
-    list.appendChild(li);
-  });
-}
-
-function setGate(id, passed) {
-  const el = document.getElementById(id);
-  el.textContent = passed ? 'PASS' : 'FAIL';
-  el.className = 'gate-status ' + (passed ? 'pass' : 'fail');
-}
-
-function loadScreenshotData() {
-  document.getElementById('marketRegime').value = 'Bearish';
-  document.getElementById('emaStructure').value = 'Bearish';
-  document.getElementById('rsi').value = '49.9';
-  document.getElementById('adx').value = '13.1';
-  document.getElementById('macd').value = '-34.05';
-  document.getElementById('rvol').value = '0.00';
-  document.getElementById('currentPrice').value = '2298.00';
-  document.getElementById('stopRef').value = '2144.80';
-  document.getElementById('target1').value = '2403.26';
-  document.getElementById('falseBreakout').value = 'No';
-  evaluateSetup();
-}
-
-function loadBullishPreset() {
-  document.getElementById('marketRegime').value = 'Bullish';
-  document.getElementById('emaStructure').value = 'Bullish';
-  document.getElementById('rsi').value = '62.4';
-  document.getElementById('adx').value = '27.5';
-  document.getElementById('macd').value = '14.80';
-  document.getElementById('rvol').value = '2.10';
-  document.getElementById('currentPrice').value = '2310.00';
-  document.getElementById('stopRef').value = '2240.00';
-  document.getElementById('target1').value = '2480.00';
-  document.getElementById('falseBreakout').value = 'No';
-  evaluateSetup();
-}
-
-// Initial evaluation on load
-evaluateSetup();
-</script>
-
-</body>
-</html>
+    /* 4 Gates Horizontal Grid */
+    .gates-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
+    @media (max-width: 600px) { .gates-row { grid-template-columns: 1fr 1fr; } }
+    .gate-card { background: rgba(13, 18, 29, 0.6); border: 1px solid var(--card-border); border-radius: 12px; padding: 12px 10px; text-align: center; }
+    .gate-lbl { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+    .gate-badge { display: inline-block; font-size: 0.7
